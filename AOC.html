@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخزن الصور</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2C2F33;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .result-count {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        #image-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .image-card {
+            background-color: #3C3F41;
+            border: 1px solid #424549;
+            border-radius: 8px;
+            margin: 10px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .image-card img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .button {
+            background-color: #7289DA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #5B6E9A;
+        }
+
+        .large-image {
+            display: none;
+            width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border: 1px solid #424549;
+            border-radius: 8px;
+        }
+
+        .close-button {
+            background-color: #D32F2F;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .close-button:hover {
+            background-color: #B71C1C;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>مخزن الصور</h1>
+
+    <input type="text" id="search" class="search-bar" placeholder="بحث عن صورة...">
+    <input type="file" id="imageUpload" class="input-field" multiple accept="image/*">
+    <button class="button" onclick="uploadImages()">رفع الصور</button>
+    
+    <div class="result-count" id="resultCount"></div>
+    <div id="image-list"></div>
+    <img id="largeImage" class="large-image" alt="صورة كبيرة">
+    <button id="closeButton" class="close-button" onclick="closeLargeImage()" style="display:none;">إغلاق</button>
+
+    <script>
+        // استرجاع الصور من localStorage
+        const images = JSON.parse(localStorage.getItem('images')) || [];
+
+        // رفع الصور
+        function uploadImages() {
+            const imageUpload = document.getElementById('imageUpload');
+            const files = imageUpload.files;
+
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                const imageName = prompt("أدخل اسم الصورة:"); // إدخال اسم الصورة
+                reader.onload = function (e) {
+                    images.push({ src: e.target.result, name: imageName || `صورة ${images.length + 1}` });
+                    localStorage.setItem('images', JSON.stringify(images));
+                    displayImages();
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        // عرض الصور
+        function displayImages(filter = '') {
+            const imageList = document.getElementById('image-list');
+            const resultCount = document.getElementById('resultCount');
+            imageList.innerHTML = '';
+            const filteredImages = images.filter(img => {
+                const cleanFilter = filter.trim().toLowerCase(); // إزالة المسافات وتحويل للحروف الصغيرة
+                const cleanName = img.name.toLowerCase(); // تحويل اسم الصورة إلى حروف صغيرة
+                return cleanName.includes(cleanFilter);
+            });
+            resultCount.textContent = `عدد النتائج: ${filteredImages.length}`; // عرض عدد النتائج
+            filteredImages.forEach((image, index) => {
+                const imageCard = document.createElement('div');
+                imageCard.className = 'image-card';
+                imageCard.innerHTML = `
+                    <img src="${image.src}" alt="صورة" onclick="showLargeImage('${image.src}')">
+                    <div>${image.name}</div>
+                    <div class="actions">
+                        <button class="button" onclick="deleteImage(${index})">حذف</button>
+                    </div>
+                `;
+                imageList.appendChild(imageCard);
+            });
+
+            // عرض الصور المشابهة إذا كانت هناك كلمات مشتركة
+            if (filter.trim() !== '') {
+                const similarImages = images.filter(img => {
+                    const cleanFilter = filter.trim().toLowerCase(); // إزالة المسافات وتحويل للحروف الصغيرة
+                    const cleanName = img.name.toLowerCase(); // تحويل اسم الصورة إلى حروف صغيرة
+                    return cleanName !== cleanFilter && cleanName.includes(cleanFilter);
+                });
+                similarImages.forEach(image => {
+                    const imageCard = document.createElement('div');
+                    imageCard.className = 'image-card';
+                    imageCard.innerHTML = `
+                        <img src="${image.src}" alt="صورة" onclick="showLargeImage('${image.src}')">
+                        <div>${image.name} (مشابهة)</div>
+                        <div class="actions">
+                            <button class="button" onclick="deleteImage(images.indexOf(image))">حذف</button>
+                        </div>
+                    `;
+                    imageList.appendChild(imageCard);
+                });
+            }
+        }
+
+        // عرض الصورة الكبيرة
+        function showLargeImage(src) {
+            const largeImage = document.getElementById('largeImage');
+            largeImage.src = src;
+            largeImage.style.display = 'block'; // عرض الصورة الكبيرة
+            document.getElementById('closeButton').style.display = 'block'; // عرض زر الإغلاق
+        }
+
+        // إغلاق الصورة الكبيرة
+        function closeLargeImage() {
+            const largeImage = document.getElementById('largeImage');
+            largeImage.style.display = 'none'; // إخفاء الصورة الكبيرة
+            document.getElementById('closeButton').style.display = 'none'; // إخفاء زر الإغلاق
+        }
+
+        // حذف صورة
+        function deleteImage(index) {
+            images.splice(index, 1);
+            localStorage.setItem('images', JSON.stringify(images));
+            displayImages();
+        }
+
+        // البحث عن الصور
+        document.getElementById('search').addEventListener('input', function() {
+            const searchValue = this.value;
+            displayImages(searchValue);
+        });
+
+        // عند تحميل الصفحة، عرض الصور المحفوظة
+        window.onload = function() {
+            displayImages(); // عرض الصور المحفوظة عند تحميل الصفحة
+        };
+    </script>
+
+</body>
+</html>
