@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فك تشفير الرسائل - CIT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: right;
+            background-color: #1c1c1c;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #f39c12;
+            text-align: center;
+            text-shadow: 2px 2px 5px #000;
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 10px;
+            width: calc(100% - 22px);
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        input {
+            background-color: #34495e;
+            color: #ecf0f1;
+            border: 1px solid #2980b9;
+        }
+        button {
+            background-color: #2980b9;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3498db;
+            transform: scale(1.05);
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #2c3e50;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+        nav a {
+            color: #f39c12;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>نظام فك التشفير - CIT</h1>
+        
+        <nav>
+            <a href="index.html">تشفير الرسالة</a>
+            <a href="decrypt.html">فك تشفير الرسالة</a>
+            <a href="messages.html">عرض الرسائل</a>
+        </nav>
+
+        <h2>فك تشفير الرسالة</h2>
+        <input type="text" id="encryptedMessage" placeholder="ادخل الرسالة المشفرة" />
+        <input type="password" id="password" placeholder="ادخل كلمة المرور" />
+        <button onclick="decryptMessage()">فك التشفير</button>
+        <p>الرسالة الأصلية: <span id="decryptedMessage"></span></p>
+    </div>
+
+    <script>
+        function decryptMessage() {
+            const encryptedMessage = document.getElementById('encryptedMessage').value;
+            const password = document.getElementById('password').value;
+            if (encryptedMessage.trim() === '' || password.trim() === '') {
+                alert('الرجاء إدخال الرسالة المشفرة وكلمة المرور');
+                return;
+            }
+
+            // تقسيم الرسالة المشفرة إلى الأجزاء الثلاثة (النص المشفر، الملح، كلمة المرور المشفرة)
+            const parts = encryptedMessage.split(':');
+            if (parts.length !== 3) {
+                alert('الرسالة المشفرة غير صحيحة');
+                return;
+            }
+            const encryptedText = parts[0];
+            const salt = parseInt(parts[1]);
+            const encryptedPassword = parts[2];
+
+            // فك تشفير كلمة المرور للتحقق
+            let decryptedPassword = '';
+            for (let i = 0; i < encryptedPassword.length; i++) {
+                const charCode = encryptedPassword.charCodeAt(i) - salt;
+                decryptedPassword += String.fromCharCode(charCode);
+            }
+
+            if (decryptedPassword !== password) {
+                alert('كلمة المرور غير صحيحة');
+                return;
+            }
+
+            // فك تشفير الرسالة
+            let decrypted = '';
+            for (let i = 0; i < encryptedText.length; i++) {
+                const charCode = encryptedText.charCodeAt(i) - salt;
+                decrypted += String.fromCharCode(charCode);
+            }
+
+            document.getElementById('decryptedMessage').innerText = decrypted;
+        }
+    </script>
+</body>
+</html>

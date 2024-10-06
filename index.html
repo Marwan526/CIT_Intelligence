@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشفير الرسائل - CIT</title>
+    
+    <!-- إضافة اللوجو كأيقونة (favicon) -->
+    <link rel="icon" href="logo.jpj" type="image/png" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: right;
+            background-color: #1c1c1c;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #f39c12;
+            text-align: center;
+            text-shadow: 2px 2px 5px #000;
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 10px;
+            width: calc(100% - 22px);
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        input {
+            background-color: #34495e;
+            color: #ecf0f1;
+            border: 1px solid #2980b9;
+        }
+        button {
+            background-color: #2980b9;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3498db;
+            transform: scale(1.05);
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #2c3e50;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+        nav a {
+            color: #f39c12;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        /* شريط المعلومات المتحرك */
+        #marquee {
+            position: fixed;
+            bottom: 0;
+            height: 20px;
+            width: 100%;
+
+            color: #00ff00;
+            padding: 10px 0;
+            font-size: 1.2rem;
+            text-align: center;
+            animation: marquee 10s linear infinite;
+        }
+        @keyframes marquee {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+        .share-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .share-buttons a {
+            text-decoration: none;
+            color: white;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>نظام التشفير - CIT</h1>
+        
+        <nav>
+            <a href="index.html">تشفير الرسالة</a>
+            <a href="decrypt.html">فك تشفير الرسالة</a>
+            <a href="messages.html">الرسائل </a>
+            
+            <a href="PDA.html">PDA</a>
+        </nav>
+
+        <h2>تشفير الرسالة</h2>
+        <input type="text" id="message" placeholder="ادخل الرسالة" />
+        <input type="password" id="password" placeholder="ادخل كلمة المرور" />
+        <button onclick="encryptMessage()">تشفير</button>
+        <p>الرسالة المشفرة: <span id="encryptedMessage"></span></p>
+        <button onclick="copyToClipboard()">نسخ الرسالة المشفرة</button>
+
+        <div class="share-buttons">
+            <h3>مشاركة الرسالة المشفرة:</h3>
+            <a id="whatsappShare" href="" target="_blank">مشاركة عبر واتساب</a>
+            <a id="telegramShare" href="" target="_blank">مشاركة عبر تليجرام</a>
+        </div>
+    </div>
+
+
+    <script>
+        function encryptMessage() {
+            const message = document.getElementById('message').value;
+            const password = document.getElementById('password').value;
+            if (message.trim() === '' || password.trim() === '') {
+                alert('الرجاء إدخال رسالة وكلمة مرور');
+                return;
+            }
+
+            let encrypted = '';
+            let salt = Math.floor(Math.random() * 100);
+            for (let i = 0; i < message.length; i++) {
+                const charCode = message.charCodeAt(i) + salt;
+                encrypted += String.fromCharCode(charCode);
+            }
+
+            let encryptedPassword = '';
+            for (let i = 0; i < password.length; i++) {
+                const charCode = password.charCodeAt(i) + salt;
+                encryptedPassword += String.fromCharCode(charCode);
+            }
+
+            const fullEncryptedMessage = encrypted + ':' + salt + ':' + encryptedPassword;
+            document.getElementById('encryptedMessage').innerText = fullEncryptedMessage;
+            updateShareLinks(fullEncryptedMessage); // تحديث روابط المشاركة
+        }
+
+        function copyToClipboard() {
+            const encryptedMessage = document.getElementById('encryptedMessage').innerText;
+            navigator.clipboard.writeText(encryptedMessage)
+                .then(() => {
+                    alert("تم نسخ الرسالة المشفرة إلى الحافظة!");
+                })
+                .catch(err => {
+                    console.error('فشل في نسخ الرسالة: ', err);
+                });
+        }
+
+        function updateShareLinks(encryptedMessage) {
+            const whatsappLink = `https://wa.me/?text=${encodeURIComponent(encryptedMessage)}`;
+            const telegramLink = `https://t.me/share/url?url=${encodeURIComponent(encryptedMessage)}&text=${encodeURIComponent(encryptedMessage)}`;
+            document.getElementById('whatsappShare').href = whatsappLink;
+            document.getElementById('telegramShare').href = telegramLink;
+        }
+    </script>
+</body>
+</html>
+
+<!-- إضافة شريط تمرير في أسفل الصفحة -->
+<div class="ticker">
+  <p>
+    You are now in the CIT intelligence service. do not disclose any information you are our eyes.
+  </p>
+</div>
+
+<style>
+    .ticker {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 30px;
+        color: #f39c12;
+        text-align: center;
+        padding: 10px 0;
+    }
+    .ticker p {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%;
+        animation: scroll 25s linear infinite;
+    }
+    @keyframes scroll {
+        0% {
+            transform: translateX(100%);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+</style>

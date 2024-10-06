@@ -1,0 +1,115 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #2C2F33;
+    color: #FFFFFF;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#person-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.person-card {
+    background-color: #3C3F41;
+    border: 1px solid #424549;
+    border-radius: 8px;
+    padding: 70px;
+    margin: 10px;
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.2s;
+    text-align: center;
+}
+
+.person-card:hover {
+    transform: scale(1.05);
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #424549;
+    background-color: #2C2F33;
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+.button {
+    background-color: #7289DA;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s;
+    margin: 5px;
+}
+
+.button:hover {
+    background-color: #5B6E9A;
+    transform: scale(1.05);
+}
+
+.search-bar {
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.profile-picture {
+    text-align: center;
+    width: 100px;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+
+.actions button {
+    flex: 1;
+    margin: 0 5px;
+}
+
+.person-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Share buttons */
+.share-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.telegram-share img,
+.whatsapp-share img {
+    width: 50px;
+    height: 50px;
+    margin: 0px;
+}
+
+.telegram-share {
+/*    background-color: #0088cc;*/
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.whatsapp-share {
+   /* background-color: #25d366;*/
+    border-radius: 50%;
+    padding: 10px;
+}

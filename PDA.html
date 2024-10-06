@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الملفات الشخصية</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>نظام إدارة الملفات الشخصية</h1>
+
+    <input type="text" id="search" class="input-field search-bar" placeholder="بحث عن شخص...">
+    <div id="person-list"></div>
+
+    <h2>إنشاء ملف شخصي</h2>
+    <input type="text" id="fileName" class="input-field" placeholder="اسم الملف">
+    <input type="file" id="coverImage" class="input-field">
+    <input type="password" id="filePassword" class="input-field" placeholder="كلمة مرور">
+    <input type="date" id="birthDate" class="input-field" placeholder="تاريخ الميلاد" oninput="calculateAge()">
+    <input type="text" id="age" class="input-field" placeholder="العمر" readonly>
+    <select id="gender" class="input-field">
+        <option value="ذكر">ذكر</option>
+        <option value="أنثى">أنثى</option>
+    </select>
+    <input type="text" id="phoneNumber" class="input-field" placeholder="رقم الهاتف">
+    <input type="url" id="socialLinks" class="input-field" placeholder="روابط صفحات التواصل (URL)">
+    <input type="email" id="email" class="input-field" placeholder="البريد الإلكتروني">
+    <input type="file" id="extraImages" class="input-field" multiple accept="image/*" max="7">
+    <input type="text" id="additionalInfo" class="input-field" placeholder="معلومات إضافية">
+    <button class="button" onclick="createPersonFile()">إنشاء ملف</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+<script>
+function calculateAge() {
+    const birthDate = document.getElementById('birthDate').value;
+    if (birthDate) {
+        const today = new Date();
+        const birthDateObj = new Date(birthDate);
+        let age = today.getFullYear() - birthDateObj.getFullYear();
+        const monthDiff = today.getMonth() - birthDateObj.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+            age--;
+        }
+        document.getElementById('age').value = age;
+    }
+}
+
+function shareInfo(fileName, email, phoneNumber, socialLinks) {
+    const message = `اسم: ${fileName}\nبريد إلكتروني: ${email}\nرقم هاتف: ${phoneNumber}\nروابط: ${socialLinks}`;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+    const options = `
+        <div class="share-buttons">
+            <a href="${telegramUrl}" target="_blank" class="telegram-share">
+                <img src="telegram-logo.png" alt="Telegram">
+            </a>
+            <a href="${whatsappUrl}" target="_blank" class="whatsapp-share">
+                <img src="whatsapp-logo.png" alt="WhatsApp">
+            </a>
+        </div>
+    `;
+    document.body.innerHTML += options;
+}
+</script>
