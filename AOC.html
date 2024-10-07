@@ -123,13 +123,26 @@
             const imageUpload = document.getElementById('imageUpload');
             const files = imageUpload.files;
 
+            if (files.length === 0) {
+                alert('يرجى اختيار صور لرفعها.');
+                return;
+            }
+
+            let uploadCount = 0; // لتتبع عدد الصور المرفوعة
             for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
                 const imageName = prompt("أدخل اسم الصورة:"); // إدخال اسم الصورة
                 reader.onload = function (e) {
                     images.push({ src: e.target.result, name: imageName || `صورة ${images.length + 1}` });
-                    localStorage.setItem('images', JSON.stringify(images));
-                    displayImages();
+                    uploadCount++;
+
+                    // عند اكتمال رفع جميع الصور
+                    if (uploadCount === files.length) {
+                        localStorage.setItem('images', JSON.stringify(images));
+                        displayImages();
+                        // مسح حقل الإدخال
+                        imageUpload.value = '';
+                    }
                 };
                 reader.readAsDataURL(files[i]);
             }
