@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الجهاز وإنشاء شخصيات</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        h1, h2 {
+            color: #00ff00;
+            text-align: center;
+        }
+
+        .btn {
+            background-color: #00ff00;
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background-color: #00cc00;
+        }
+
+        .character-list, .agent-list {
+            width: 60%;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .character, .agent {
+            background-color: #333333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .character strong, .agent strong {
+            color: #00ff00;
+        }
+
+        button.delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        button.delete-btn:hover {
+            background-color: darkred;
+        }
+
+        .profile-pic {
+            width: 30px; /* تصغير حجم الصورة */
+            height: 30px; /* تصغير حجم الصورة */
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .agent {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #00ff6a;
+            border-radius: 8px;
+            background-color: #333333;
+            color: #e0e0e0;
+            font-size: 16px;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #00cc55;
+            background-color: #444444;
+        }
+
+        form {
+            width: 60%;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 255, 106, 0.3);
+        }
+
+        label {
+            color: #00ff6a;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>نظام إدارة الجهاز وإنشاء شخصيات</h1>
+    
+    <label for="goal">اختر الهدف من الشخصية:</label>
+    <select id="goal">
+        <option value="استخبارات">استخبارات</option>
+        <option value="تجنيد">تجنيد</option>
+        <option value="تغطية">تغطية</option>
+    </select>
+    <button class="btn" id="create-character-btn">إنشاء شخصية جديدة</button>
+
+    <h2>الشخصيات الوهمية المحفوظة</h2>
+    <div class="character-list" id="character-list"></div>
+
+    <h2>إحصائيات الجهاز</h2>
+    <p id="stats"></p>
+
+    <form id="agent-form">
+        <label for="agent-name">اسم العضو:</label>
+        <input type="text" id="agent-name" required>
+
+        <label for="agent-age">عمر العضو:</label>
+        <input type="number" id="agent-age" required>
+
+        <label for="agent-location">موقع العضو:</label>
+        <input type="text" id="agent-location" required>
+
+        <label for="agent-task">المهمة:</label>
+        <input type="text" id="agent-task" required>
+
+        <label for="agent-photo">صورة العضو:</label>
+        <input type="file" id="agent-photo" accept="image/*" required>
+
+        <button type="submit" class="btn">إضافة عضو جديد</button>
+    </form>
+
+    <h2>الأعضاء العاملون</h2>
+    <div class="agent-list" id="agent-list"></div>
+
+    <script>
+        let totalAgents = 0;
+        let totalCharacters = 0;
+
+        function generateRandomName() {
+            const names = ['أحمد', 'محمود', 'فاطمة', 'سمية', 'علي', 'سارة', 'يوسف', 'نجلاء'];
+            return names[Math.floor(Math.random() * names.length)];
+        }
+
+        function generateRandomAge() {
+            return Math.floor(Math.random() * 40) + 20;
+        }
+
+        function generateRandomBirthdate() {
+            const year = Math.floor(Math.random() * 30) + 1960;
+            const month = Math.floor(Math.random() * 12) + 1;
+            const day = Math.floor(Math.random() * 28) + 1;
+            return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
+        }
+
+        function generateRandomBackground(goal) {
+            const backgrounds = {
+                'استخبارات': ['مخابرات سابقة', 'عميل سري', 'محلل أمني'],
+                'تجنيد': ['مهندس شبكات', 'خبير تقني', 'أستاذ جامعي'],
+                'تغطية': ['صحفي', 'كاتب', 'مدير تنفيذي']
+            };
+            return backgrounds[goal][Math.floor(Math.random() * backgrounds[goal].length)];
+        }
+
+        function generateRandomProfession(goal) {
+            const professions = {
+                'استخبارات': ['محلل استخباراتي', 'عميل ميداني'],
+                'تجنيد': ['مدير تجنيد', 'مستشار أمني'],
+                'تغطية': ['متخصص إعلامي', 'متحدث رسمي']
+            };
+            return professions[goal][Math.floor(Math.random() * professions[goal].length)];
+        }
+
+        function generateRandomSkills() {
+            const skills = ['التشفير', 'التنصت', 'الاختراق الأخلاقي', 'المراقبة', 'التفاوض', 'إدارة الأزمات'];
+            return skills[Math.floor(Math.random() * skills.length)];
+        }
+
+        function loadCharacters() {
+            return JSON.parse(localStorage.getItem('CIT_characters')) || [];
+        }
+
+        function saveCharacters(characters) {
+            localStorage.setItem('CIT_characters', JSON.stringify(characters));
+        }
+
+        function loadAgents() {
+            return JSON.parse(localStorage.getItem('CIT_agents')) || [];
+        }
+
+        function saveAgents(agents) {
+            localStorage.setItem('CIT_agents', JSON.stringify(agents));
+        }
+
+        function displayCharacters() {
+            const characters = loadCharacters();
+            const characterListDiv = document.getElementById('character-list');
+            characterListDiv.innerHTML = '';
+            totalCharacters = characters.length;
+
+            characters.forEach((character, index) => {
+                const characterDiv = document.createElement('div');
+                characterDiv.classList.add('character');
+                characterDiv.innerHTML = `
+                    <strong>الاسم الوهمي:</strong> ${character.name}<br>
+                    <strong>العمر:</strong> ${character.age}<br>
+                    <strong>تاريخ الميلاد:</strong> ${character.birthdate}<br>
+                    <strong>الخلفية الاجتماعية:</strong> ${character.background}<br>
+                    <strong>المهنة:</strong> ${character.profession}<br>
+                    <strong>المهارات:</strong> ${character.skills}<br>
+                    <strong>الهدف:</strong> ${character.goal}<br>
+                    <strong>معرف الشخصية:</strong> ${character.id}<br>
+                    <button class="delete-btn" onclick="deleteCharacter(${index})">حذف</button>
+                `;
+                characterListDiv.appendChild(characterDiv);
+            });
+            updateStats();
+        }
+
+    document.getElementById('create-character-btn').addEventListener('click', function() {
+            const goal = document.getElementById('goal').value;
+            const newCharacter = {
+                id: Date.now(),
+                name: generateRandomName(),
+                age: generateRandomAge(),
+                birthdate: generateRandomBirthdate(),
+                background: generateRandomBackground(goal),
+                profession: generateRandomProfession(goal),
+                skills: generateRandomSkills(),
+                goal: goal
+            };
+
+            const characters = loadCharacters();
+            characters.push(newCharacter);
+            saveCharacters(characters);
+            displayCharacters();
+        });
+
+        document.getElementById('agent-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // منع إرسال النموذج
+
+            const agentName = document.getElementById('agent-name').value;
+            const agentAge = document.getElementById('agent-age').value;
+            const agentLocation = document.getElementById('agent-location').value;
+            const agentTask = document.getElementById('agent-task').value;
+            const agentPhoto = document.getElementById('agent-photo').files[0];
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const newAgent = {
+                    name: agentName,
+                    age: agentAge,
+                    location: agentLocation,
+                    task: agentTask,
+                    photo: e.target.result
+                };
+
+                const agents = loadAgents();
+                agents.push(newAgent);
+                saveAgents(agents);
+                displayAgents();
+                document.getElementById('agent-form').reset(); // إعادة تعيين النموذج
+            };
+            reader.readAsDataURL(agentPhoto);
+        });
+
+        function displayAgents() {
+            const agents = loadAgents();
+            const agentListDiv = document.getElementById('agent-list');
+            agentListDiv.innerHTML = '';
+            totalAgents = agents.length;
+
+            agents.forEach((agent, index) => {
+                const agentDiv = document.createElement('div');
+                agentDiv.classList.add('agent');
+                agentDiv.innerHTML = `
+                    <img src="${agent.photo}" class="profile-pic" alt="${agent.name}">
+                    <strong>${agent.name}</strong><br>
+                    <strong>العمر:</strong> ${agent.age}<br>
+                    <strong>الموقع:</strong> ${agent.location}<br>
+                    <strong>المهمة:</strong> ${agent.task}<br>
+                    <button class="delete-btn" onclick="deleteAgent(${index})">حذف</button>
+                `;
+                agentListDiv.appendChild(agentDiv);
+            });
+        }
+
+        function deleteCharacter(index) {
+            const characters = loadCharacters();
+            characters.splice(index, 1);
+            saveCharacters(characters);
+            displayCharacters();
+        }
+
+        function deleteAgent(index) {
+            const agents = loadAgents();
+            agents.splice(index, 1);
+            saveAgents(agents);
+            displayAgents();
+        }
+
+        function updateStats() {
+            document.getElementById('stats').innerText = `إجمالي الشخصيات: ${totalCharacters}, إجمالي الأعضاء: ${totalAgents}`;
+        }
+
+        // تحميل الشخصيات والأعضاء عند تحميل الصفحة
+        displayCharacters();
+        displayAgents();
+    </script>
+
+<style>
+
+
+.agent-list {
+    width: 60%;
+    margin-top: 20px;
+    max-height: 400px; /* يمكنك إزالة هذا إذا كنت تريد أن يتوسع بشكل غير محدود */
+    overflow-y: auto; /* يسمح بالتمرير الرأسي عند الضرورة */
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 255, 106, 0.3);
+}
+
+.agent {
+    background-color: #333333;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    word-wrap: break-word; /* يسمح بكسر الكلمات الطويلة داخل الصندوق */
+    overflow: hidden; /* يمنع النص من الخروج عن حدود العنصر */
+    display: flex; /* استخدام فليكس لجعل العناصر تتماشى بشكل صحيح */
+    align-items: center; /* محاذاة العناصر في المنتصف عموديًا */
+    flex-wrap: wrap; /* يسمح للكلمات بالانتقال إلى السطر التالي عند الضرورة */
+}
+
+.profile-pic {
+    width: 30px; /* حجم الصورة */
+    height: 30px; /* حجم الصورة */
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.agent p {
+    margin: 0; /* إزالة الهوامش الافتراضية للنصوص */
+    flex: 1; /* يجعل النص يأخذ المساحة المتاحة */
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background-color: #121212;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+   display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+}
+
+h1, h2 {
+    color: #00ff00;
+    text-align: center;
+}
+
+.btn {
+    background-color: #00ff00;
+    color: #121212;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.btn:hover {
+    background-color: #00cc00;
+}
+
+.character-list, .agent-list {
+    width: 60%;
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.character, .agent {
+    background-color: #333333;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.character strong, .agent strong {
+    color: #00ff00;
+}
+
+button.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+button.delete-btn:hover {
+    background-color: darkred;
+}
+
+.profile-pic {
+    width: 30px; /* تصغير حجم الصورة */
+    height: 30px; /* تصغير حجم الصورة */
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.agent {
+    display: flex;
+    align-items: center;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #00ff6a;
+    border-radius: 8px;
+    background-color: #333333;
+    color: #e0e0e0;
+    font-size: 16px;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: #00cc55;
+    background-color: #444444;
+}
+
+form {
+    width: 60%;
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0, 255, 106, 0.3);
+}
+
+label {
+    color: #00ff6a;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+</style>
+</body>
+</html>
+        
